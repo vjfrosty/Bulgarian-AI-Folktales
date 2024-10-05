@@ -17,13 +17,13 @@ The application builds collaboratively, engaging and educational narratives that
 Story materials can help children to have early exposure to domain knowledge and some universal principles of human society in diverse and dramatic scenarios. Interactive storytelling is a flexible and effective educational method that integrates storytelling with children’s participation, and it has been widely applied in teaching activities for preschool and elementary school children
 
 ## Installation 
-https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/INSTALLATION.md
+https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/INSTALLATION.md
   
 ##  Building steps
-**[Source information and preprocesing](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/PREPROCESING.md)** We are working with 28 books of Bulgarian folklore fairy tales, sourced from Chitanka.info. These books feature well-known authors such as Elin Pelin, Angel Karalijchev, Leda Mileva, and others. Each book is processed using a custom function that separates the individual stories, and the resulting data is saved into JSON files. 
+**[Source information and preprocesing](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/PREPROCESING.md)** We are working with 28 books of Bulgarian folklore fairy tales, sourced from Chitanka.info. These books feature well-known authors such as Elin Pelin, Angel Karalijchev, Leda Mileva, and others. Each book is processed using a custom function that separates the individual stories, and the resulting data is saved into JSON files. 
 
 
-**[Embedding](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/EMBEDING.md)** This system embeds documents with contextual information and stores them in a Chroma vector database. It handles both small (60-1000 tokens) and large (1000+ tokens) documents differently.
+**[Embedding](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/EMBEDING.md)** This system embeds documents with contextual information and stores them in a Chroma vector database. It handles both small (60-1000 tokens) and large (1000+ tokens) documents differently.
 
 
 ## Key tech
