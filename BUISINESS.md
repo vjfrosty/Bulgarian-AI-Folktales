@@ -13,7 +13,7 @@ Our project excels in creating innovative educational tool that blend storytelli
 
 **AI-Powered Co-Creation**: Our platform leverages state-of-the-art language models to co-create stories with parents and teachers. This interactive approach ensures active engagement and allows for the imparting of specific educational goals, such as teaching positive behavior and moral lessons.
 
- ## Main Idea
+ ## Mission
 
 Our mission is to collaboratively build engaging and educational narratives that convey positive values and lessons to children. By integrating traditional Bulgarian folklore with modern AI technology, we provide a seamless storytelling experience that is both culturally relevant and educationally impactful.
 
@@ -21,9 +21,9 @@ Story materials can help children to have early exposure to domain knowledge and
 
 ## Product Features
 
-**Interactive Storytelling Bot**: An AI character that continues the story based on the child's feedback, embedding positive values relevant to Bulgarian culture and language.
+**Interactive Storytelling Bot**: An AI character that creates the story based on the users's input, embedding positive values relevant to Bulgarian culture and language.
 
-**Customized Narratives**: Stories are tailored to the child's interests and the educational goals of the parent or teacher, ensuring a personalized learning experience.
+**Customized Narratives**: Stories are tailored to the users's interests and the educational goals of the parent or teacher, ensuring a personalized learning experience.
 **Cultural Enrichment**: Incorporation of Bulgarian folklore enriches the storytelling process, preserving cultural heritage while educating the younger generation.
 
 ## Target audience 
@@ -37,9 +37,6 @@ Our primary audience includes parents, educators, and institutions seeking innov
 **Contextual Retrieval**: Our AI retrieves relevant folklore elements from the Chroma vector store, ensuring cultural and linguistic appropriateness.
 
 **Interactive Dialogue**: The AI engages with the parent through open-ended questions, shaping the narrative based on their input.
-
-
-
 
 **Story Development**: The story evolves through a cycle of feedback and AI-generated content, incorporating positive values and moral lessons.
 
@@ -58,5 +55,3 @@ Our primary audience includes parents, educators, and institutions seeking innov
 ## Conclusion
 
 Our interactive storytelling bot represents a fusion of tradition and technology, offering a novel approach to children's education. By co-creating stories that are culturally rich and educationally meaningful, we provide a valuable tool for parents and educators to inspire and educate the next generation.
-
-![enter image description here](https://www.mediastorehouse.com/p/251/rachenitsa-dance-1894-ivan-mrkvicka-1856-1938-19372025.jpg.webp)
