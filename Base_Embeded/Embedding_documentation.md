@@ -1,6 +1,3 @@
-Here's a markdown description of the `embed_documents` function and its related components:
-
-```markdown
 # Document Embedding with Contextual Enhancement
 
 This system embeds documents with contextual information and stores them in a Chroma vector database. It handles both small (60-1000 tokens) and large (1000+ tokens) documents differently.
