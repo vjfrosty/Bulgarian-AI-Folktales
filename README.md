@@ -1,4 +1,5 @@
 
+
   
   
 
@@ -23,8 +24,10 @@ https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/INSTALLATION.m
 **[Source information and preprocesing](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/PREPROCESING.md)** We are working with 28 books of Bulgarian folklore fairy tales, sourced from Chitanka.info. These books feature well-known authors such as Elin Pelin, Angel Karalijchev, Leda Mileva, and others. Each book is processed using a custom function that separates the individual stories, and the resulting data is saved into JSON files. 
 
 
-**[Embedding](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/EMBEDING.md)** This system embeds documents with contextual information and stores them in a Chroma vector database. It handles both small (60-1000 tokens) and large (1000+ tokens) documents differently.
+**[Embedding and storage](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/EMBEDING.md)** This system embeds documents with contextual information and stores them in a Chroma vector database. It handles both small (60-1000 tokens) and large (1000+ tokens) documents differently.
+application
 
+**[The Bulgarian Fairy Tale Bo](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/APP.md)t** leverages the capabilities of **Chroma Vectorstore**, **Langchain agents**, and **Chainlit** to create interactive and engaging fairy tales. This bot guides parents and children through a unique storytelling experience by incorporating personalized context, character details, and dynamic story generation, all in Bulgarian.
 
 ## Key tech
 
