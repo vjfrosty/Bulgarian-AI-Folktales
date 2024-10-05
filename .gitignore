@@ -188,3 +188,4 @@ Meta_chroma/
 _*.ipynb
 *.bat
 *.ps1
+config.json

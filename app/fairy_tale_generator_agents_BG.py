@@ -21,6 +21,18 @@ from langchain.chains import LLMChain, SequentialChain
 # Load environment variables
 load_dotenv()
 
+import os
+import json
+def load_api_key_from_json(file_path):
+    with open(file_path, 'r') as file:
+        config = json.load(file)
+    return config['OPENAI_API_KEY']
+
+# Load the API key from the JSON file
+api_key = load_api_key_from_json('../config.json')
+
+# Set the environment variable
+os.environ['OPENAI_API_KEY'] = api_key
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
@@ -34,7 +46,7 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
 
-CHROMA_PATH = "vector_store"
+CHROMA_PATH = "../Base_Embeded/Basic_chroma"
 
 # Use the embedding function
 embedding_function = OpenAIEmbeddings(
