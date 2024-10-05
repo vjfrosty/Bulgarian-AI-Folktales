@@ -181,6 +181,10 @@ full_books_800/
 vector_store/
 /vector_store
 
+Basic_chroma/
+Meta_chroma/
 
 # DP: Ignore all .ipynb files that start with an underscore
 _*.ipynb
+*.bat
+*.ps1
