@@ -35,11 +35,11 @@ os.environ['OPENAI_API_KEY'] = api_key
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
-CHROMA_PATH = "../Base_Embeded/Basic_chroma"
+CHROMA_PATH = "../Base_Embeded/Meta_chroma"
 
 # Use the embedding function
 embedding_function = OpenAIEmbeddings(
-    model='text-embedding-ada-002',
+    model='text-embedding-3-small',
 )
 
 # Prepare the database
@@ -47,7 +47,7 @@ vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding
 
 # Set up the OpenAI model
 llm = ChatOpenAI(
-    model="gpt-3.5-turbo",
+    model="gpt-4o-mini",
     api_key=OPENAI_API_KEY,
     temperature=0.3,       # Lowered temperature for more deterministic output
     max_tokens=None,
@@ -61,15 +61,14 @@ llm = ChatOpenAI(
 SETTING_PROMPT = PromptTemplate(
     input_variables=["context", "story_prompt", "character_details"],
     template="""
-    Създайте началото на една единствена приказка, която ще ангажира активно родителите и децата.
+    Създайте началото на една единствена приказка, използвайки предоставеното обобщение като вдъхновение.
 
-    Контекст: {context}
+    Обобщение на контекста: {context}
     Заглавие на приказката: {story_prompt}
     Герои: {character_details}
 
     Насоки:
-    - Дайте име на приказката, използвайки контекста и героите.
-    - Създайте **само една** приказка и не включвайте множество сюжетни линии.
+    
     - Започнете приказката по увлекателен начин.
     - Пишете на български език, с ярък и лесно разбираем стил.
     - Представете обстановката и героите ясно, като оставите място за развитие и решения.
@@ -84,14 +83,16 @@ PLOT_DEVELOPMENT_PROMPT = PromptTemplate(
     template="""
     Развийте следващата част от **същата** приказка, представяйки предизвикателство или точка за решение.
 
-    Използвайте контекста, героите и обстановката, за да продължите сюжета по логичен начин.
+    Използвайте обобщението на контекста, героите и обстановката, за да продължите сюжета по логичен начин.
 
     Предишна обстановка: {setting}
-    Контекст: {context}
+    Обобщение на контекста: {context}
     Герои: {character_details}
     Заглавие на приказката: {story_prompt}
 
     Насоки:
+    - Довършете приказката по увлекателен начин
+    - Създайте **само една** приказка и не включвайте множество сюжетни линии.
     - Пишете на български език.
     - Създайте **само един** сюжет и не започвайте нови сюжетни линии.
     - Създайте предизвикателство, подходящо за героите и техните черти, като се уверите, че е подходящо за деца.
@@ -150,6 +151,18 @@ VALIDATION_PROMPT = PromptTemplate(
     """
 )
 
+# Summary Prompt
+SUMMARY_PROMPT = PromptTemplate(
+    input_variables=["text"],
+    template="""
+    Обобщете следния текст в кратък параграф, подчертавайки основните теми и идеи.
+
+    Текст: {text}
+
+    Обобщение:
+    """
+)
+
 # Define the LLM chains for each step
 setting_chain = LLMChain(
     llm=llm,
@@ -179,6 +192,12 @@ moral_chain = LLMChain(
 validation_chain = LLMChain(
     llm=llm,
     prompt=VALIDATION_PROMPT,
+)
+
+# Summary Chain
+summary_chain = LLMChain(
+    llm=llm,
+    prompt=SUMMARY_PROMPT,
 )
 
 # Create the overall sequential chain with memory
@@ -220,12 +239,18 @@ async def main(message):
                 # Proceed as before
                 try:
                     # Perform a similarity search on Chroma DB
-                    results = vectorstore.similarity_search_with_relevance_scores(user_input, k=3)
+                    results = vectorstore.similarity_search_with_relevance_scores(user_input, k=1)
 
-                    # Extract and format the results into a usable context
-                    formatted_docs = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
+                    # Combine the documents' content
+                    combined_docs = " ".join([doc.page_content for doc, _score in results])
 
-                    # Extract the metadata directly from the Chroma DB results
+                    # Generate the summary
+                    context_summary = await summary_chain.arun({"text": combined_docs})
+
+                    # Save the summary as the context
+                    cl.user_session.set("context", context_summary)
+
+                    # Extract the metadata for user information (optional)
                     doc_metadata = [doc.metadata for doc, _ in results]
                     unique_books = list(set([metadata.get('book', 'Unknown Book') for metadata in doc_metadata]))
                     unique_authors = list(set([metadata.get('author', 'Unknown Author') for metadata in doc_metadata]))
@@ -235,15 +260,6 @@ async def main(message):
                     books_str = ', '.join(unique_books)
                     authors_str = ', '.join(unique_authors)
                     stories_str = ', '.join(unique_stories)
-
-                    # Save the context to the user session
-                    cl.user_session.set("context", formatted_docs)
-
-                    # Print debug information
-                    print("Debug: Context successfully set.")
-                    print("Debug: Books Used:", books_str)
-                    print("Debug: Authors Used:", authors_str)
-                    print("Debug: Stories Used:", stories_str)
 
                     # Inform the user about the documents used
                     await cl.Message(content=f"Бяха използвани следните книги: {books_str}\nАвтори: {authors_str}\nИстории: {stories_str}\n\nМоля, въведете информация за основните герои във вашата приказка.").send()
@@ -305,6 +321,7 @@ async def main(message):
                     await cl.Message(content="Грешка: Историята е празна. Моля, опитайте отново с нови данни.").send()
                     print("Error: Story generated is empty.")
 
+                # Reset the session variables for a new story
                 cl.user_session.set("context", None)
                 cl.user_session.set("character_details", None)
 
