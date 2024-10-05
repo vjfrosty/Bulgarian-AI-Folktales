@@ -21,6 +21,7 @@ from langchain_core.output_parsers import StrOutputParser
 # Load environment variables
 load_dotenv()
 
+import os
 import json
 def load_api_key_from_json(file_path):
     with open(file_path, 'r') as file:
@@ -39,7 +40,7 @@ CHROMA_PATH = "../Base_Embeded/Basic_chroma"
 
 # Use the embedding function
 embedding_function = OpenAIEmbeddings(
-    model='text-embedding-ada-002',
+    model='text-embedding-3-small',
 )
 
 # Prepare the database
@@ -47,110 +48,102 @@ vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding
 
 # Set up the OpenAI model
 llm = ChatOpenAI(
-    model="gpt-3.5-turbo",
+    model="gpt-4o-mini",  # Use a smaller model for faster response times
     api_key=OPENAI_API_KEY,
-    temperature=0.3,       # Lowered temperature for more deterministic output
+    temperature=0.7,       # Increase temperature for more creativity
     max_tokens=None,
     timeout=None,
     max_retries=2,
 )
 
-# Define prompt templates with memory
-
-# Setting Prompt
+# Define chain of thought prompt templates with memory
 SETTING_PROMPT = PromptTemplate(
     input_variables=["context", "story_prompt", "character_details"],
     template="""
-    Създайте началото на една единствена приказка, която ще ангажира активно родителите и децата.
+Generate an initial story setting that will set the stage for active participation from parents and children.
 
-    Контекст: {context}
-    Заглавие на приказката: {story_prompt}
-    Герои: {character_details}
+Context: {context}
+Story Prompt: {story_prompt}
+Characters: {character_details}
 
-    Насоки:
-    - Дайте име на приказката, използвайки контекста и героите.
-    - Създайте **само една** приказка и не включвайте множество сюжетни линии.
-    - Започнете приказката по увлекателен начин.
-    - Пишете на български език, с ярък и лесно разбираем стил.
-    - Представете обстановката и героите ясно, като оставите място за развитие и решения.
-    - Включете сетивни детайли и насърчете детето да прави избори.
-    - Фокусирайте се върху положителни ценности и емоции, които подпомагат ученето.
-    """
+Guidelines:
+- Give the story a name using the context and the characters.
+- Begin the story in an engaging way.
+- Write in Bulgarian, with vivid and easy-to-understand language.
+- Introduce setting and characters clearly, providing room for development and decisions.
+- Incorporate sensory details and encourage the child to make choices.
+- Focus on positive values and emotions that can foster learning.
+"""
 )
 
-# Plot Development Prompt
 PLOT_DEVELOPMENT_PROMPT = PromptTemplate(
     input_variables=["context", "story_prompt", "character_details", "setting"],
     template="""
-    Развийте следващата част от **същата** приказка, представяйки предизвикателство или точка за решение.
+Develop the next segment of the story, presenting a challenge or a decision point.
 
-    Използвайте контекста, героите и обстановката, за да продължите сюжета по логичен начин.
+Use the context, characters, and setting to drive the plot forward, maintaining a coherent narrative.
 
-    Предишна обстановка: {setting}
-    Контекст: {context}
-    Герои: {character_details}
-    Заглавие на приказката: {story_prompt}
+Previous Setting: {setting}
+Context: {context}
+Characters: {character_details}
+Story Prompt: {story_prompt}
 
-    Насоки:
-    - Пишете на български език.
-    - Създайте **само един** сюжет и не започвайте нови сюжетни линии.
-    - Създайте предизвикателство, подходящо за героите и техните черти, като се уверите, че е подходящо за деца.
-    - Поддържайте връзка с предишната обстановка.
-    - Подчертайте ценности като работа в екип, смелост, творчество и доброта.
-    """
+Guidelines:
+- Write in Bulgarian.
+- Create a challenge suitable for the characters and their traits, ensuring it's appropriate for children.
+- Maintain coherence with the previous setting.
+- Focus on one plot without starting a new one.
+- Emphasize values like teamwork, courage, creativity, and kindness.
+"""
 )
 
-# Conflict Resolution Prompt
 CONFLICT_RESOLUTION_PROMPT = PromptTemplate(
     input_variables=["plot"],
     template="""
-    Опишете как конфликтът се разрешава в **същата** приказка, като позволите на родителя и детето да обсъдят потенциални решения.
+Describe how the conflict is resolved by allowing parent and child to discuss potential solutions.
 
-    Предишен сюжет: {plot}
+Previous Plot: {plot}
 
-    Насоки:
-    - Пишете на български език.
-    - Продължете от предишния сюжет, без да започвате нов.
-    - Не въвеждайте нови приказки или сюжети.
-    - Подчертайте положителни действия, творчество и сътрудничество при постигането на решението.
-    - Предложете начини, по които героите могат да решат проблема, насърчавайки разнообразни решения.
-    - Уверете се, че разрешението носи чувство за постижение и подпомага положителното учене.
-    """
+Guidelines:
+- Write in Bulgarian.
+- Continue from the previous plot without starting a new one.
+- Highlight positive actions, creativity, and cooperation in reaching the solution.
+- Provide multiple ways the characters can solve the issue, encouraging diverse problem-solving.
+- Ensure the resolution brings a sense of accomplishment and promotes positive learning.
+"""
 )
 
-# Moral Lesson Prompt
 MORAL_LESSON_PROMPT = PromptTemplate(
     input_variables=["plot", "resolution"],
     template="""
-    Завършете **същата** приказка с поука, която естествено произтича от пътешествието и действията на героите.
+Conclude the story with a moral lesson that stems naturally from the characters' journey and actions.
 
-    Резюме на сюжета: {plot}
-    Решение: {resolution}
+Plot Summary: {plot}
+Resolution: {resolution}
 
-    Насоки:
-    - Пишете на български език.
-    - Продължете приказката, без да започвате нова.
-    - Не въвеждайте нови приказки или герои.
-    - Включете въпроси, които родителите могат да използват, за да говорят за поуката от приказката. Формулирайте ги като "Попитайте детето..."
-    - Уверете се, че поуката съответства на избора на героите и насърчава положителни качества като доброта, честност или постоянство.
-    - Направете поуката проста и лесна за разбиране, с ясна връзка със събитията в приказката.
-    - Подчертайте как ценностите, демонстрирани от героите, могат да се отнасят до реални ситуации за децата.
-    """
+Guidelines:
+- Write in Bulgarian.
+- Continue the story without starting a new one.
+- Include questions that parents can use to talk about the moral of the story. Formulate it as "Попитайте детето..."
+- Ensure the lesson aligns with the characters' choices and promotes positive traits like kindness, honesty, or perseverance.
+- Make the moral simple and easy to understand, with clear links to the story events.
+- Reinforce how the values demonstrated by characters relate to real-life situations for children.
+"""
 )
 
 # Validation Prompt
 VALIDATION_PROMPT = PromptTemplate(
     input_variables=["user_input"],
     template="""
-    Определете дали следният вход е подходящ за създаване на детска приказка.
+Определете дали следният вход е подходящ за създаване на детска приказка.
 
-    Вход: {user_input}
+Вход: {user_input}
 
-    Отговорете с "ДА" ако е подходящ, или "НЕ" ако не е. Отговорете само с "ДА" или "НЕ".
-    """
+Отговорете с "ДА" ако е подходящ, или "НЕ" ако не е. Отговорете само с "ДА" или "НЕ".
+"""
 )
 
-# Define the LLM chains for each step
+# Define the LLM chains for each step, including previous outputs
 setting_chain = LLMChain(
     llm=llm,
     prompt=SETTING_PROMPT,
@@ -224,7 +217,7 @@ async def main(message):
 
                     # Extract and format the results into a usable context
                     formatted_docs = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-
+                    
                     # Extract the metadata directly from the Chroma DB results
                     doc_metadata = [doc.metadata for doc, _ in results]
                     unique_books = list(set([metadata.get('book', 'Unknown Book') for metadata in doc_metadata]))

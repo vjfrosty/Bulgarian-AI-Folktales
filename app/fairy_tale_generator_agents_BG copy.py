@@ -12,7 +12,9 @@ from langchain_ollama.llms import OllamaLLM
 import os
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+import chainlit as cl
 from langchain.chains import RetrievalQA
+# Import required dependencies
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain, SequentialChain
 from langchain_core.runnables import RunnablePassthrough
@@ -21,6 +23,7 @@ from langchain_core.output_parsers import StrOutputParser
 # Load environment variables
 load_dotenv()
 
+import os
 import json
 def load_api_key_from_json(file_path):
     with open(file_path, 'r') as file:
@@ -35,11 +38,19 @@ os.environ['OPENAI_API_KEY'] = api_key
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
+import chainlit as cl
+
+# Import required dependencies
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain, SequentialChain
+from langchain_core.runnables import RunnablePassthrough
+from langchain_core.output_parsers import StrOutputParser
+
 CHROMA_PATH = "../Base_Embeded/Basic_chroma"
 
 # Use the embedding function
 embedding_function = OpenAIEmbeddings(
-    model='text-embedding-ada-002',
+    model='text-embedding-3-small',
 )
 
 # Prepare the database
@@ -47,94 +58,88 @@ vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding
 
 # Set up the OpenAI model
 llm = ChatOpenAI(
-    model="gpt-3.5-turbo",
+    model="gpt-4o-mini",  # Use a smaller model for faster response times
     api_key=OPENAI_API_KEY,
-    temperature=0.3,       # Lowered temperature for more deterministic output
+    temperature=0.7,       # Increase temperature for more creativity
     max_tokens=None,
     timeout=None,
     max_retries=2,
 )
 
-# Define prompt templates with memory
-
-# Setting Prompt
+# Define chain of thought prompt templates
 SETTING_PROMPT = PromptTemplate(
     input_variables=["context", "story_prompt", "character_details"],
     template="""
-    Създайте началото на една единствена приказка, която ще ангажира активно родителите и децата.
+    Generate an initial story prompt that will set the stage for active participation from parents and children.
 
-    Контекст: {context}
-    Заглавие на приказката: {story_prompt}
-    Герои: {character_details}
+    Context: {context}
+    Story Prompt: {story_prompt}
+    Characters: {character_details}
 
-    Насоки:
-    - Дайте име на приказката, използвайки контекста и героите.
-    - Създайте **само една** приказка и не включвайте множество сюжетни линии.
-    - Започнете приказката по увлекателен начин.
-    - Пишете на български език, с ярък и лесно разбираем стил.
-    - Представете обстановката и героите ясно, като оставите място за развитие и решения.
-    - Включете сетивни детайли и насърчете детето да прави избори.
-    - Фокусирайте се върху положителни ценности и емоции, които подпомагат ученето.
+    Guidelines:
+    - Give the story name at all costs, use the context and the characters to create a story name.
+    - Begin the story in an engaging way.
+    - Write in Bulgarian, with descriptive language that is vivid and easy to understand.
+    - Introduce setting and characters clearly, providing room for development and decisions.
+    - Incorporate sensory details and encourage the child to make choices.
+    - Focus on positive values and emotions that can foster learning.
     """
 )
 
-# Plot Development Prompt
 PLOT_DEVELOPMENT_PROMPT = PromptTemplate(
     input_variables=["context", "story_prompt", "character_details", "setting"],
     template="""
-    Развийте следващата част от **същата** приказка, представяйки предизвикателство или точка за решение.
+    Develop the next segment of the story, presenting a challenge or a decision point.
+    
+    Use the context, characters, and setting to drive the plot forward, maintaining a coherent narrative.
+    Always use Story Prompt as a question.
+    Setting: {setting}
+    Context: {context}
+    Characters: {character_details}
+    Story Prompt: {story_prompt}
 
-    Използвайте контекста, героите и обстановката, за да продължите сюжета по логичен начин.
-
-    Предишна обстановка: {setting}
-    Контекст: {context}
-    Герои: {character_details}
-    Заглавие на приказката: {story_prompt}
-
-    Насоки:
-    - Пишете на български език.
-    - Създайте **само един** сюжет и не започвайте нови сюжетни линии.
-    - Създайте предизвикателство, подходящо за героите и техните черти, като се уверите, че е подходящо за деца.
-    - Поддържайте връзка с предишната обстановка.
-    - Подчертайте ценности като работа в екип, смелост, творчество и доброта.
+    Guidelines:
+    - Write in Bulgarian.
+    - If the Story Prompt is a question, try to answer it in the plot.
+    - Create a challenge that suits the characters and their traits, making sure it is suitable for children.
+    - Use the context and characters to drive the plot forward, maintaining a coherent narrative.
+    - Create only one plot, do not start a second one.
+    - Design the scenario to include question resolution if possible.
+    - The story must emphasize values like teamwork, courage, creativity, and kindness.
     """
 )
 
-# Conflict Resolution Prompt
 CONFLICT_RESOLUTION_PROMPT = PromptTemplate(
     input_variables=["plot"],
     template="""
-    Опишете как конфликтът се разрешава в **същата** приказка, като позволите на родителя и детето да обсъдят потенциални решения.
+    Describe how the conflict is resolved by allowing parent and child to discuss potential solutions.
 
-    Предишен сюжет: {plot}
+    Plot: {plot}
 
-    Насоки:
-    - Пишете на български език.
-    - Продължете от предишния сюжет, без да започвате нов.
-    - Не въвеждайте нови приказки или сюжети.
-    - Подчертайте положителни действия, творчество и сътрудничество при постигането на решението.
-    - Предложете начини, по които героите могат да решат проблема, насърчавайки разнообразни решения.
-    - Уверете се, че разрешението носи чувство за постижение и подпомага положителното учене.
+    Guidelines:
+    - Write in Bulgarian.
+    - Do not start a new plot, use the plot from the previous segment.
+    - Highlight positive actions, creativity, and cooperation in reaching the solution.
+    - Provide multiple ways the characters can solve the issue, encouraging diverse problem-solving.
+    - Ensure the resolution brings a sense of accomplishment and promotes positive learning.
     """
 )
 
-# Moral Lesson Prompt
 MORAL_LESSON_PROMPT = PromptTemplate(
     input_variables=["plot", "resolution"],
     template="""
-    Завършете **същата** приказка с поука, която естествено произтича от пътешествието и действията на героите.
+    Conclude the story with a moral lesson that stems naturally from the characters' journey and actions.
 
-    Резюме на сюжета: {plot}
-    Решение: {resolution}
+    Plot Summary: {plot}
+    Resolution: {resolution}
 
-    Насоки:
-    - Пишете на български език.
-    - Продължете приказката, без да започвате нова.
-    - Не въвеждайте нови приказки или герои.
-    - Включете въпроси, които родителите могат да използват, за да говорят за поуката от приказката. Формулирайте ги като "Попитайте детето..."
-    - Уверете се, че поуката съответства на избора на героите и насърчава положителни качества като доброта, честност или постоянство.
-    - Направете поуката проста и лесна за разбиране, с ясна връзка със събитията в приказката.
-    - Подчертайте как ценностите, демонстрирани от героите, могат да се отнасят до реални ситуации за децата.
+    Guidelines:
+    - Write in Bulgarian.
+    - Do not start a new story, continue the story from the previous segment.
+    - Include questions that parents can use to talk about the moral of the story. Formulate it as "Попитайте детето..."
+    - Make sure the lesson aligns with the character choices and promotes positive traits like kindness, honesty, or perseverance.
+    - Ensure the moral is simple and easy to understand, with clear links to the story events.
+    - Reinforce how the values demonstrated by characters can relate to real-life situations for children.
     """
 )
 
@@ -142,12 +147,12 @@ MORAL_LESSON_PROMPT = PromptTemplate(
 VALIDATION_PROMPT = PromptTemplate(
     input_variables=["user_input"],
     template="""
-    Определете дали следният вход е подходящ за създаване на детска приказка.
+Determine whether the following input is suitable for generating a children's fairy tale.
 
-    Вход: {user_input}
+Input: {user_input}
 
-    Отговорете с "ДА" ако е подходящ, или "НЕ" ако не е. Отговорете само с "ДА" или "НЕ".
-    """
+Answer "YES" if it is suitable, or "NO" if it is not. Only answer with "YES" or "NO".
+"""
 )
 
 # Define the LLM chains for each step
@@ -181,7 +186,7 @@ validation_chain = LLMChain(
     prompt=VALIDATION_PROMPT,
 )
 
-# Create the overall sequential chain with memory
+# Create the overall sequential chain
 overall_chain = SequentialChain(
     chains=[setting_chain, plot_chain, resolution_chain, moral_chain],
     input_variables=["context", "story_prompt", "character_details"],
@@ -216,7 +221,7 @@ async def main(message):
             validation_result = validation_result.strip().upper()
             print("Debug: Validation Result:", validation_result)
 
-            if "ДА" in validation_result:
+            if "YES" in validation_result:
                 # Proceed as before
                 try:
                     # Perform a similarity search on Chroma DB
@@ -224,7 +229,7 @@ async def main(message):
 
                     # Extract and format the results into a usable context
                     formatted_docs = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
-
+                    
                     # Extract the metadata directly from the Chroma DB results
                     doc_metadata = [doc.metadata for doc, _ in results]
                     unique_books = list(set([metadata.get('book', 'Unknown Book') for metadata in doc_metadata]))
@@ -276,7 +281,6 @@ async def main(message):
                 print("Story Prompt:", story_prompt)
                 print("Characters to Introduce:", character_details)
 
-                # Run the chain with memory
                 result = await chain.acall({
                     "context": context,
                     "story_prompt": story_prompt,
