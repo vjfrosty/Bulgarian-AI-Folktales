@@ -55,6 +55,7 @@ llm = ChatOpenAI(
     max_retries=2,
 )
 
+
 # Define prompt templates with memory
 
 # Setting Prompt
@@ -62,6 +63,7 @@ SETTING_PROMPT = PromptTemplate(
     input_variables=["context", "story_prompt", "character_details"],
     template="""
     Създайте началото на една единствена приказка, използвайки предоставеното обобщение като вдъхновение.
+    не е необхдимо да разказваш прикзка!!!
 
     Обобщение на контекста: {context}
     Заглавие на приказката: {story_prompt}
@@ -69,11 +71,10 @@ SETTING_PROMPT = PromptTemplate(
 
     Насоки:
     
-    - Започнете приказката по увлекателен начин.
+    
     - Пишете на български език, с ярък и лесно разбираем стил.
-    - Представете обстановката и героите ясно, като оставите място за развитие и решения.
-    - Включете сетивни детайли и насърчете детето да прави избори.
-    - Фокусирайте се върху положителни ценности и емоции, които подпомагат ученето.
+    - Представете обстановката и героите ясно, не пиши цяла пиказка.
+
     """
 )
 
@@ -88,7 +89,7 @@ PLOT_DEVELOPMENT_PROMPT = PromptTemplate(
     Предишна обстановка: {setting}
     Обобщение на контекста: {context}
     Герои: {character_details}
-    Заглавие на приказката: {story_prompt}
+    
 
     Насоки:
     - Довършете приказката по увлекателен начин
@@ -241,6 +242,8 @@ async def main(message):
                     # Perform a similarity search on Chroma DB
                     results = vectorstore.similarity_search_with_relevance_scores(user_input, k=1)
 
+                    
+
                     # Combine the documents' content
                     combined_docs = " ".join([doc.page_content for doc, _score in results])
 
@@ -308,10 +311,11 @@ async def main(message):
 
                 # Combine the outputs
                 story = (
-                    result.get("setting", "") + "\n\n" +
-                    result.get("plot", "") + "\n\n" +
-                    result.get("resolution", "") + "\n\n" +
-                    result.get("moral", "")
+                    result.get("setting", "") + "\n\n" 
+                    #+
+                    #result.get("plot", "") + "\n\n" +
+                    #result.get("resolution", "") + "\n\n" +
+                    #result.get("moral", "")
                 )
 
                 if story.strip():  # Check if the story is not empty
