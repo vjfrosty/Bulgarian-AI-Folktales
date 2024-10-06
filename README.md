@@ -3,7 +3,7 @@
   
   
 
-# Business Description - Fairy teller 
+# Business Description - Create Your Own Bulgarian Fairy Tales 
 by: Yasen Ivanov and Dimitar Peykov 
 Submitoion for: # '24 AI Hackathon - Hosted by Team-GPT & AIE.F | Iris.ai, Appolica
   
