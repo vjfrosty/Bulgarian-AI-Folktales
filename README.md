@@ -58,7 +58,7 @@ application
 
 **Cultural Enrichment**: Incorporation of Bulgarian folklore enriches the storytelling process, preserving cultural heritage while educating the younger generation.
 
-  ![enter image description here](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/2024-10-05%2023_55_43-Untitled%20Diagram_backup_before_switching.drawio%20-%20draw.io.png.webp)
+  ![enter image description here](https://github.com/vjfrosty/Bulgarian-AI-Folktales/blob/main/docs/2024-10-05%2023_55_43-Untitled%20Diagram_backup_before_switching.drawio%20-%20draw.io.png)
 
 ## Target audience
 
