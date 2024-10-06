@@ -108,6 +108,7 @@ class AppState(TypedDict):
     n_drafts: int
     max_drafts: int
 
+
 # Node functions
 def writer_node(state: AppState):
     post = state["fairy_tale"]
